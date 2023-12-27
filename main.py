@@ -29,3 +29,14 @@ message = [
 
 output = chat(message)
 print(output.content)
+
+from langchain import PromptTemplate
+
+template = '''You are an experienced virologist. Write a few sentences about the following {virus} in {language}.'''
+
+prompt = PromptTemplate(input_variables=['virus','language'], template=template)
+
+print(prompt)
+
+output = llm(prompt.format(virus='virus', language='Romanian'))
+print(output)
