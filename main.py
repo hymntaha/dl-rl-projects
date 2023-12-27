@@ -13,22 +13,22 @@ output = llm('explain quantum mechanics in one sentence')
 
 print(llm.get_num_tokens('explain quantum mechanics in one sentence'))
 output = llm.generate(['... is the capital city of France.', 'What is the formula for the area of a circle?'])
-print(output.generations)
-print(output.generations[1][0].text)
+# print(output.generations)
+# print(output.generations[1][0].text)
 
 
 #### GPT 3.5 #####
 from langchain.schema import (AIMessage, HumanMessage, SystemMessage)
 from langchain.chat_models import ChatOpenAI
 
-chat  = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.5, max_tokens=1024)
+chat  = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=0.5)
 message = [
     SystemMessage(content='You are physicist and respond only in German.'),
     HumanMessage(content='explain quantum mechanics in one sentence'),
 ]
 
 output = chat(message)
-print(output.content)
+# print(output.content)
 
 from langchain import PromptTemplate
 
@@ -36,7 +36,29 @@ template = '''You are an experienced virologist. Write a few sentences about the
 
 prompt = PromptTemplate(input_variables=['virus','language'], template=template)
 
-print(prompt)
+# print(prompt)
 
 output = llm(prompt.format(virus='virus', language='Romanian'))
+# print(output)
+
+
+### Simple Chains ###
+from langchain.chains import LLMChain, SimpleSequentialChain
+chain = LLMChain(llm=chat, prompt=prompt)
+output = chain.run({'virus':'HSV', 'language':'french'})
+print(output)
+
+### Sequential chains ### 
+llm1 = OpenAI(model_name='text-davinci-003', temperature=0.7, max_tokens=1024)
+template = '''You are an experienced scientist and Python programmer. Write a few sentences about the following {concept}.'''
+
+prompt1 = PromptTemplate(input_variables=['concept'], template=template)
+chain1 = LLMChain(llm=llm1, prompt=prompt1)
+
+llm2 = ChatOpenAI(model_name='gpt-3.5-turbo', temperature=1.2)
+prompt2 = PromptTemplate(input_variables=['function'], template='Given the Python function {function}, described it as detailed as possible.')
+
+chain2 = LLMChain(llm=llm2, prompt=prompt2)
+overall_chain = SimpleSequentialChain(chains=[chain1, chain2], verbose=True)
+output = overall_chain.run('linear')
 print(output)
