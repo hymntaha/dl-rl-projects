@@ -72,3 +72,27 @@ llm = OpenAI(temperature=0)
 agent_executor = create_python_agent(llm=llm, tool=PythonREPLTool(), verbose=True)
 output = agent_executor.run('Calculate the square root of the factorial of 20 and display it with 4 decimal points.')
 print(output)
+
+### Vector DB ###
+import pinecone
+pinecone.init(api_key=os.environ.get('PINECONE_API_KEY'), environment=os.environ.get('PINECONE_ENV'))
+print(pinecone.info.version())
+
+pinecone.list_indexes()
+index_name = 'langchain-pinecone'
+if index_name not in pinecone.list_indexes():
+    print(f'Creating index {index_name}')
+    pinecone.create_index(index_name, dimension=1536, metric='cosine',pods=1, pod_type='p1.x2' )
+    print('Done')
+else:
+    print(f'Index {index_name} already exists')
+
+print(pinecone.describe_index(index_name))
+# if index_name in pinecone.list_indexes():
+#     print(f'Deleting index {index_name}')
+#     pinecone.delete_index(index_name)
+#     print('Done')
+# else:
+#     print(f'Index {index_name} does not exist')
+index= pinecone.Index(index_name=index_name)
+index.describe_index_stats()
