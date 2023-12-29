@@ -62,3 +62,13 @@ chain2 = LLMChain(llm=llm2, prompt=prompt2)
 overall_chain = SimpleSequentialChain(chains=[chain1, chain2], verbose=True)
 output = overall_chain.run('linear')
 print(output)
+
+### Langchain Agents ###
+from langchain_experimental.agents.agent_toolkits import create_python_agent
+from langchain_experimental.tools.python.tool import PythonREPLTool
+from langchain.llms import OpenAI
+
+llm = OpenAI(temperature=0)
+agent_executor = create_python_agent(llm=llm, tool=PythonREPLTool(), verbose=True)
+output = agent_executor.run('Calculate the square root of the factorial of 20 and display it with 4 decimal points.')
+print(output)
