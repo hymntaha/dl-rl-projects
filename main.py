@@ -96,3 +96,43 @@ print(pinecone.describe_index(index_name))
 #     print(f'Index {index_name} does not exist')
 index= pinecone.Index(index_name=index_name)
 index.describe_index_stats()
+
+import random
+vectors = [[random.random() for _ in range(1536)] for v in range(5)]
+ids = list('abcde')
+
+
+index = pinecone.Index(index_name)
+index.upsert(vectors=zip(ids, vectors))
+
+index.upsert(vectors=[('c', [0.3] * 1536)])
+
+index = pinecone.Index(index_name=index_name)
+print(index.fetch(ids=['c','d']))
+
+queries = [[random.random() for _ in range(1536)] for v in range(2)]
+
+# outcome = index.query(queries=queries, top_k=2, include_values=False)
+
+
+### Splitting and Embedding Text Using LangChain ###
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+with open('churchill_speech.txt') as f:
+    churchill_speech = f.read()
+
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=100, chunk_overlap=20, length_function=len)
+chunks = text_splitter.create_documents([churchill_speech])
+print(chunks[0])
+print(f'Now you have {len(chunks)} chunks')
+
+### Embedding Cost ### 
+def print_embedding_cost(texts):
+    import tiktoken
+    enc = tiktoken.encoding_for_model('text-embedding-ada-002')
+    total_tokens = sum([len(enc.encode(page.page_content)) for page in texts])
+    print(f'Totak tokens: {total_tokens}')
+    print(f'Embedding cost in USD: {total_tokens / 1000 * 0.0004:.6f}')
+
+print_embedding_cost(chunks)
+
+
