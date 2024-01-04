@@ -40,47 +40,61 @@ def print_embedding_cost(texts):
     print(f'Totak tokens: {total_tokens}')
     print(f'Embedding cost in USD: {total_tokens / 1000 * 0.0004:.6f}')
 
-def insert_of_fetch_embeddings(index_name):
+def insert_or_fetch_embeddings(index_name):
     import pinecone
     from langchain.vectorstores import Pinecone
     from langchain.embeddings.openai import OpenAIEmbeddings
-
+    
     embeddings = OpenAIEmbeddings()
+    
     pinecone.init(api_key=os.environ.get('PINECONE_API_KEY'), environment=os.environ.get('PINECONE_ENV'))
+    
     if index_name in pinecone.list_indexes():
-        print(f'Index {index_name} already exists. Loading embeddings...')
+        print(f'Index {index_name} already exists. Loading embeddings ... ', end='')
         vector_store = Pinecone.from_existing_index(index_name, embeddings)
         print('Ok')
     else:
-        print(f'Index {index_name} does not exist. Creating index and loading embeddings...')
+        print(f'Creating index {index_name} and embeddings ...', end='')
         pinecone.create_index(index_name, dimension=1536, metric='cosine')
-        vector_store = Pinecone.from_new_index(index_name, embeddings, index_name)
+        vector_store = Pinecone.from_documents(chunks, embeddings, index_name=index_name)
         print('Ok')
-
+        
     return vector_store
+    
 
 def delete_pinecone_index(index_name='all'):
     import pinecone
     pinecone.init(api_key=os.environ.get('PINECONE_API_KEY'), environment=os.environ.get('PINECONE_ENV'))
-
+    
     if index_name == 'all':
         indexes = pinecone.list_indexes()
-        print('Deleting all indexes...')
+        print('Deleting all indexes ... ')
         for index in indexes:
-            print(f'Deleting index {index}')
             pinecone.delete_index(index)
-        print('Done')
+        print('Ok')
     else:
-        print(f'Deleting index {index_name} ...')
+        print(f'Deleting index {index_name} ...', end='')
         pinecone.delete_index(index_name)
-        print('Done')
+        print('Ok')
+
+def ask_and_get_answer(vector_store, q):
+    from langchain.chains import RetrievalQA
+    from langchain.chat_models import ChatOpenAI
+
+    llm = ChatOpenAI(model='gpt-3.5-turbo', temperature=1)
+    retriever = vector_store.as_retriever(search_type='similarity', search_kwargs={'k': 3})
+
+    chain = RetrievalQA.from_chain_type(llm=llm, chain_type='stuff', retriever=retriever)
+
+    answer = chain.run(q)
+    return answer
 
 data = load_document('us_constitution.pdf')
 # print(data[1].page_content)
 # print(data[10].metadata)
 
-print(f'Number of pages: {len(data)}')
-print(f'Number of characters: {data[20].page_content}')
+print(f'You have {len(data)} pages in your data')
+print(f'There are {len(data[20].page_content)} characters in the page')
 
 # data = load_document('the_great_gatsby.docx')
 # print(data[0].page_content)
@@ -94,3 +108,25 @@ print(len(chunks))
 print(chunks[10].page_content)
 print_embedding_cost(chunks)
 
+# delete_pinecone_index()
+
+index_name = 'askadocument'
+vector_store = insert_or_fetch_embeddings(index_name)
+q = 'What is the whole document about?'
+answer = ask_and_get_answer(vector_store, q)
+print(answer)
+
+import time
+i = 1
+print('Write Quit or Exit to quit.')
+while True:
+    q = input(f'Question #{i}: ')
+    i = i + 1
+    if q.lower() in ['quit', 'exit']:
+        print('Quitting ... bye bye!')
+        time.sleep(2)
+        break
+    
+    answer = ask_and_get_answer(vector_store, q)
+    print(f'\nAnswer: {answer}')
+    print(f'\n {"-" * 50} \n')
