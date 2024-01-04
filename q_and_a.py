@@ -59,6 +59,22 @@ def insert_of_fetch_embeddings(index_name):
 
     return vector_store
 
+def delete_pinecone_index(index_name='all'):
+    import pinecone
+    pinecone.ini(api_key=os.environ.get('PINECONE_API_KEY'), environment=os.environ.get('PINECONE_ENV'))
+
+    if index_name == 'all':
+        indexes = pinecone.list_indexes()
+        print('Deleting all indexes...')
+        for index in indexes:
+            print(f'Deleting index {index}')
+            pinecone.delete_index(index)
+        print('Done')
+    else:
+        print(f'Deleting index {index_name} ...')
+        pinecone.delete_index(index_name)
+        print('Done')
+
 data = load_document('us_constitution.pdf')
 # print(data[1].page_content)
 # print(data[10].metadata)
