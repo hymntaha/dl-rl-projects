@@ -61,7 +61,7 @@ def insert_of_fetch_embeddings(index_name):
 
 def delete_pinecone_index(index_name='all'):
     import pinecone
-    pinecone.ini(api_key=os.environ.get('PINECONE_API_KEY'), environment=os.environ.get('PINECONE_ENV'))
+    pinecone.init(api_key=os.environ.get('PINECONE_API_KEY'), environment=os.environ.get('PINECONE_ENV'))
 
     if index_name == 'all':
         indexes = pinecone.list_indexes()
