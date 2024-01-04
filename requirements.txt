@@ -3,3 +3,5 @@ langchain
 pinecone-client
 python-dotenv
 tiktoken
+matplotlib
+pypdf
