@@ -5,3 +5,5 @@ python-dotenv
 tiktoken
 matplotlib
 pypdf
+docx2txt
+wikipedia
