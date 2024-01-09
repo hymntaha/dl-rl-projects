@@ -14,7 +14,7 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 from torch.autograd import Variable
 
-plt.style.use('seaborn-whitegrid')
+plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams['lines.linewidth'] = 2
 plt.rcParams['font.sans-serif'] = 'Arial'
 plt.rcParams['text.color'] = 'black'
@@ -32,3 +32,8 @@ torch.cuda.manual_seed(SEED)
 torch.backends.cudnn.deterministic = True
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+data_dir = './input/dog-breed-identification/'
+labels = pd.read_csv(os.path.join(data_dir, 'labels.csv'))
+assert(len(os.listdir(os.path.join(data_dir, 'train'))) == len(labels))
+
+print(labels.head())
