@@ -170,3 +170,105 @@ class LeNet(nn.Module):
         return x
 model = LeNet().to(device)
 summary(model, (3, 32, 32))
+
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+model= LeNet().to(device)
+loss_criterion = nn.CrossEntropyLoss().to(device)
+optimizer=optim.Adam(model.parameters())
+
+print(f'The model has {count_parameters(model):,} trainable parameters')
+
+def train(model, iterator, optimizer, criterion, device):
+    
+    epoch_loss = 0
+    epoch_acc = 0
+    
+    model.train()
+    
+    for (x, y) in iterator:
+        
+        x = Variable(torch.FloatTensor(np.array(x))).to(device)
+        y = Variable(torch.LongTensor(y)).to(device)
+        
+        optimizer.zero_grad()
+                
+        y_pred = model(x)
+        
+        loss = criterion(y_pred, y)
+        
+        acc = calculate_accuracy(y_pred, y)
+        
+        loss.backward()
+        
+        optimizer.step()
+        
+        epoch_loss += loss.item()
+        epoch_acc += acc.item()
+        
+    return epoch_loss / len(iterator), epoch_acc / len(iterator)
+
+def evaluate(model, iterator, criterion, device):
+    
+    epoch_loss = 0
+    epoch_acc = 0
+    
+    model.eval()
+    
+    with torch.no_grad():
+        
+        for (x, y) in iterator:
+
+            x = Variable(torch.FloatTensor(np.array(x))).to(device)
+            y = Variable(torch.LongTensor(y)).to(device)
+        
+            y_pred = model(x)
+
+            loss = criterion(y_pred, y)
+
+            acc = calculate_accuracy(y_pred, y)
+
+            epoch_loss += loss.item()
+            epoch_acc += acc.item()
+        
+    return epoch_loss / len(iterator), epoch_acc / len(iterator)
+
+def fit_model(model, model_name, train_iterator, valid_iterator, optimizer, loss_criterion, device, epochs):
+    """ Fits a dataset to model"""
+    best_valid_loss = float('inf')
+    
+    train_losses = []
+    valid_losses = []
+    train_accs = []
+    valid_accs = []
+    
+    for epoch in range(epochs):
+    
+        start_time = time.time()
+    
+        train_loss, train_acc = train(model, train_iterator, optimizer, loss_criterion, device)
+        valid_loss, valid_acc = evaluate(model, valid_iterator, loss_criterion, device)
+        
+        train_losses.append(train_loss)
+        valid_losses.append(valid_loss)
+        train_accs.append(train_acc*100)
+        valid_accs.append(valid_acc*100)
+    
+        if valid_loss < best_valid_loss:
+            best_valid_loss = valid_loss
+            torch.save(model.state_dict(), f'{model_name}.pt')
+    
+        end_time = time.time()
+
+        epoch_mins, epoch_secs = epoch_time(start_time, end_time)
+    
+        print(f'Epoch: {epoch+1:02} | Epoch Time: {epoch_mins}m {epoch_secs}s')
+        print(f'\tTrain Loss: {train_loss:.3f} | Train Acc: {train_acc*100:.2f}%')
+        print(f'\t Val. Loss: {valid_loss:.3f} |  Val. Acc: {valid_acc*100:.2f}%')
+        
+    return pd.DataFrame({f'{model_name}_Training_Loss':train_losses, 
+                        f'{model_name}_Training_Acc':train_accs, 
+                        f'{model_name}_Validation_Loss':valid_losses, 
+                        f'{model_name}_Validation_Acc':valid_accs})
+
+train_stats_LeNet = fit_model(model, 'LeNet', train_iterator, valid_iterator, optimizer, loss_criterion, device, epochs=20)
