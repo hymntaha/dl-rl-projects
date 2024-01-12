@@ -94,3 +94,79 @@ train_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_train
 images = [(image, label) for image, label in [train_data[i] for i in range(N_IMAGES)]] 
 plot_images(images)
 
+normalize = transforms.Normalize(
+   mean=[0.485, 0.456, 0.406],
+   std=[0.229, 0.224, 0.225]
+)
+transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0)
+train_transforms = transforms.Compose([transforms.Resize(32),
+                               transforms.CenterCrop(32),
+                               transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0),
+                               transforms.RandomHorizontalFlip(p=0.5),
+                               transforms.RandomVerticalFlip(p=0.5),
+                               transforms.RandomGrayscale(p=0.1), 
+                               transforms.ToTensor(),
+                               normalize])
+test_transforms = transforms.Compose([transforms.Resize(32),
+                               transforms.CenterCrop(32),
+                               transforms.ToTensor(),
+                               normalize])
+
+train_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_train, labels=y_train, transforms=train_transforms)
+valid_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_valid, labels=y_valid, transforms=test_transforms)
+test_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_test, labels=y_test, transforms=test_transforms)
+
+print(f'Number of training examples: {len(train_data)}')
+print(f'Number of validation examples: {len(valid_data)}')
+print(f'Number of testing examples: {len(test_data)}')
+
+BATCH_SIZE = 64
+
+train_iterator = DataLoader(train_data, shuffle=True, batch_size= BATCH_SIZE)
+valid_iterator = DataLoader(valid_data, batch_size=BATCH_SIZE)
+test_iterator = DataLoader(test_data, batch_size = BATCH_SIZE)
+
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+def epoch_time(start_time, end_time):
+    elapsed_time = end_time - start_time
+    elapsed_mins = int(elapsed_time / 60)
+    elapsed_secs = int(elapsed_time - (elapsed_mins * 60))
+    return elapsed_mins, elapsed_secs
+
+def calculate_accuracy(y_pred, y):
+    top_pred = y_pred.argmax(1, keepdim = True)
+    correct = top_pred.eq(y.view_as(top_pred)).sum()
+    acc = correct.float() / y.shape[0]
+    return acc
+
+class LeNet(nn.Module):
+    def __init__(self):
+        super(LeNet, self).__init__()
+        
+        self.features = nn.Sequential(
+            nn.Conv2d(in_channels=3, out_channels=6, kernel_size=5), #stride=1, padding=0 is a default
+            nn.ReLU(),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),
+            nn.ReLU(),
+            nn.AvgPool2d(kernel_size=2, stride=2)
+        )
+        self.classifier = nn.Sequential(
+            nn.Linear(16*5*5, 120),
+            nn.ReLU(),
+            nn.Linear(120, 84),
+            nn.ReLU(),
+            nn.Linear(84, 120)   #num_classes = 120
+        )
+    
+    def forward(self, x):
+        batch_size = x.shape[0]
+        x = self.features(x)
+        x = x.view(batch_size, -1)
+        x = self.classifier(x)
+        
+        return x
+model = LeNet().to(device)
+summary(model, (3, 32, 32))
