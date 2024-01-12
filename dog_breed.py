@@ -74,22 +74,23 @@ class Dataset_Interpreter(Dataset):
             
         return np.array(image), label
     
-    def plot_images(images):
+def plot_images(images):
 
-        n_images = len(images)
+    n_images = len(images)
 
-        rows = int(np.sqrt(n_images))
-        cols = int(np.sqrt(n_images))
+    rows = int(np.sqrt(n_images))
+    cols = int(np.sqrt(n_images))
 
-        fig = plt.figure(figsize=(20,10))
-        for i in range(rows*cols):
-            ax = fig.add_subplot(rows, cols, i+1)
-            ax.set_title(f'{le.inverse_transform([images[i][1]])}')
-            ax.imshow(np.array(images[i][0]))
-            ax.axis('off')
+    fig = plt.figure(figsize=(20,10))
+    for i in range(rows*cols):
+        ax = fig.add_subplot(rows, cols, i+1)
+        ax.set_title(f'{le.inverse_transform([images[i][1]])}')
+        ax.imshow(np.array(images[i][0]))
+        ax.axis('off')
         
 N_IMAGES = 9
 
 train_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_train, labels=y_train)
 images = [(image, label) for image, label in [train_data[i] for i in range(N_IMAGES)]] 
 plot_images(images)
+
