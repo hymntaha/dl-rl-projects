@@ -272,3 +272,106 @@ def fit_model(model, model_name, train_iterator, valid_iterator, optimizer, loss
                         f'{model_name}_Validation_Acc':valid_accs})
 
 train_stats_LeNet = fit_model(model, 'LeNet', train_iterator, valid_iterator, optimizer, loss_criterion, device, epochs=20)
+
+def plot_training_statistics(train_stats, model_name):
+    
+    fig, axes = plt.subplots(2, figsize=(15,15))
+    axes[0].plot(train_stats[f'{model_name}_Training_Loss'], label=f'{model_name}_Training_Loss')
+    axes[0].plot(train_stats[f'{model_name}_Validation_Loss'], label=f'{model_name}_Validation_Loss')
+    axes[1].plot(train_stats[f'{model_name}_Training_Acc'], label=f'{model_name}_Training_Acc')
+    axes[1].plot(train_stats[f'{model_name}_Validation_Acc'], label=f'{model_name}_Validation_Acc')
+    
+    axes[0].set_xlabel("Number of Epochs"), axes[0].set_ylabel("Loss")
+    axes[1].set_xlabel("Number of Epochs"), axes[1].set_ylabel("Accuracy in %")
+    
+    axes[0].legend(), axes[1].legend()
+
+plot_training_statistics(train_stats_LeNet, 'LeNet')
+
+
+###### TRAINING ON RESNET-18 WITH TRANSFER LEARNING ######
+from torchvision import models
+model = models.resnet18(pretrained=True).to(device)
+print(model)
+
+for name, param in model.named_parameters():
+    if("bn" not in name):
+        param.requires_grad = False
+
+model.fc = nn.Linear(model.fc.in_features,120).to(device)
+optimizer = optim.Adam(model.parameters(), lr = 1e-2)
+
+normalize = transforms.Normalize(
+   mean=[0.485, 0.456, 0.406],
+   std=[0.229, 0.224, 0.225]
+)
+transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0)
+train_transforms = transforms.Compose([transforms.Resize(224),
+                               transforms.CenterCrop(224),
+                               transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0),
+                               transforms.RandomHorizontalFlip(p=0.5),
+                               transforms.RandomVerticalFlip(p=0.5),
+                               transforms.RandomGrayscale(p=0.1), 
+                               transforms.ToTensor(),
+                               normalize])
+test_transforms = transforms.Compose([transforms.Resize(224),
+                               transforms.CenterCrop(224),
+                               transforms.ToTensor(),
+                               normalize])
+
+train_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_train, labels=y_train, transforms=train_transforms)
+valid_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_valid, labels=y_valid, transforms=test_transforms)
+test_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_test, labels=y_test, transforms=test_transforms)
+
+BATCH_SIZE = 64
+
+train_iterator = DataLoader(train_data, shuffle=True, batch_size= BATCH_SIZE)
+valid_iterator = DataLoader(valid_data, batch_size=BATCH_SIZE)
+test_iterator = DataLoader(test_data, batch_size = BATCH_SIZE)
+
+train_stats_ResNet18 = fit_model(model, 'ResNet18', train_iterator, valid_iterator, optimizer, loss_criterion, device, epochs=20)
+
+plot_training_statistics(train_stats_ResNet18, 'ResNet18')
+
+
+#### TRAINING ON RESNET-34 WITH TRANSFER LEARNING ####
+from torchvision import models
+model = models.resnet34(pretrained=True).to(device)
+print(model)
+
+for name, param in model.named_parameters():
+    if("bn" not in name):
+        param.requires_grad = False
+
+model.fc = nn.Linear(model.fc.in_features,120).to(device)
+optimizer = optim.Adam(model.parameters(), lr = 1e-2)
+
+normalize = transforms.Normalize(
+   mean=[0.485, 0.456, 0.406],
+   std=[0.229, 0.224, 0.225]
+)
+transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0)
+train_transforms = transforms.Compose([transforms.Resize(224),
+                               transforms.CenterCrop(224),
+                               transforms.ColorJitter(brightness=0, contrast=0, saturation=0, hue=0),
+                               transforms.RandomHorizontalFlip(p=0.5),
+                               transforms.RandomVerticalFlip(p=0.5),
+                               transforms.RandomGrayscale(p=0.1), 
+                               transforms.ToTensor(),
+                               normalize])
+test_transforms = transforms.Compose([transforms.Resize(224),
+                               transforms.CenterCrop(224),
+                               transforms.ToTensor(),
+                               normalize])
+
+train_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_train, labels=y_train, transforms=train_transforms)
+valid_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_valid, labels=y_valid, transforms=test_transforms)
+test_data = Dataset_Interpreter(data_path=data_dir+'train/', file_names=X_test, labels=y_test, transforms=test_transforms)
+
+BATCH_SIZE = 64
+
+train_iterator = DataLoader(train_data, shuffle=True, batch_size= BATCH_SIZE)
+valid_iterator = DataLoader(valid_data, batch_size=BATCH_SIZE)
+test_iterator = DataLoader(test_data, batch_size = BATCH_SIZE)
+
+train_stats_ResNet34 = fit_model(model, 'ResNet34', train_iterator, valid_iterator, optimizer, loss_criterion, device, epochs=20)
