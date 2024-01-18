@@ -39,3 +39,14 @@ train = dataset.take(int(len(dataset)*.7))
 val = dataset.skip(int(len(dataset)*.7)).take(int(len(dataset)*.2))
 test = dataset.skip(int(len(dataset)*.9)).skip(int(len(dataset)*.1))
 
+# Sequential Model
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dropout, Dense, Embedding, Bidirectional
+
+model = Sequential()
+model.add(Embedding(MAX_FEATURES+1, 32))
+model.add(Bidirectional(LSTM(32, activation='tanh')))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(256, activation='relu'))
+model.add(Dense(128, activation='relu'))
+model.add(Dense(6, activation='sigmoid'))
