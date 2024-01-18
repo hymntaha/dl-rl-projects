@@ -30,6 +30,12 @@ dataset = tf.data.Dataset.from_tensor_slices((vectorizer_text, y))
 dataset = dataset.cache()
 dataset = dataset.shuffle(160000)
 dataset = dataset.batch(16)
-dataset = dataset.prefetch(8)
+dataset = dataset.prefetch(8) # helps bottleneck
 
-print(dataset.as_numpy_iterator().next())
+batch_X, batch_y = dataset.as_numpy_iterator().next()
+print(batch_X.shape)
+
+train = dataset.take(int(len(dataset)*.7))
+val = dataset.skip(int(len(dataset)*.7)).take(int(len(dataset)*.2))
+test = dataset.skip(int(len(dataset)*.9)).skip(int(len(dataset)*.1))
+
