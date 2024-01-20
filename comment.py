@@ -64,4 +64,30 @@ plt.show()
 
 input_text = vectorizer('You freaking suck!')
 print(input_text)
-res = model.predict(np.expand_dims(input_text, axis=0))
+
+batch = test.as_numpy_iterator().next()
+batch_X, batch_y = test.as_numpy_iterator().next()  
+(model.predict(batch_X) > 0.5).astype(int)
+
+res = model.predict(np.expand_dims(batch_X))
+res.flatten()
+
+from tensorflow.keras.metrics import Precision, Recall, CategoricalAccuracy
+
+pre = Precision()
+re = Recall()
+acc = CategoricalAccuracy()
+
+for batch in test.as_numpy_iterator():
+    # Unpack the batch
+    X_true, y_true = batch
+    # Make predictions
+    yhat = model.predict(X_true)
+
+    # Flatten the predictions and true values
+    y_true = y_true.flatten()
+    yhat = yhat.flatten()
+
+    pre.update_state(y_true, yhat)
+    re.updates_state(y_true, yhat)
+    acc.update_state(y_true, yhat)  
