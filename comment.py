@@ -50,3 +50,18 @@ model.add(Dense(128, activation='relu'))
 model.add(Dense(256, activation='relu'))
 model.add(Dense(128, activation='relu'))
 model.add(Dense(6, activation='sigmoid'))
+
+model.compile(loss='BinaryCrossentropy', optimizer='Adam')
+model.summary()
+
+history = model.fit(train, epochs=10, validation_data=val)
+print(history.history)
+
+from matplotlib import pyplot as plt
+plt.figure(figsize=(8.5))
+pd.DataFrame(history.history).plot()
+plt.show()
+
+input_text = vectorizer('You freaking suck!')
+print(input_text)
+res = model.predict(np.expand_dims(input_text, axis=0))
