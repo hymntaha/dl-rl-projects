@@ -139,3 +139,96 @@ for arr in cars_annos_test_mat['annotations'][0]:
 
 # Using these data structures, we'll be able to return an image and a label easily in our custom dataset as we'll see in a bit
 print(len(training_image_label_dictionary), len(testing_image_label_dictionary))
+
+class StanfordCarsCustomDataset(Dataset):
+    def __init__(self, directory, image_label_dict, transforms):
+        super().__init__()
+
+        self.images = [os.path.join(directory, f) for f in os.listdir(directory)]
+        self.transforms = transforms
+        self.image_label_dict = image_label_dict
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, index):
+        # Get image
+        image = self.images[index]
+        img_pil = Image.open(image).convert('RGB')
+        img_trans = self.transforms(img_pil)
+
+        # Parse out the label from cars_meta and cars_x_annos files
+        image_stem = image.split("/")[-1]
+        img_label = self.image_label_dict[image_stem]
+
+        return img_trans, img_label
+    
+train_dset = StanfordCarsCustomDataset(cars_train, training_image_label_dictionary, googlenet_transforms)
+test_dset = StanfordCarsCustomDataset(cars_test, testing_image_label_dictionary, googlenet_transforms)
+
+train_dloader = DataLoader(train_dset, batch_size=32, shuffle=True)
+test_dloader = DataLoader(test_dset, batch_size=32)
+
+# Set up loss function, optmizer, and training/testing loops
+
+loss_fn = nn.CrossEntropyLoss(label_smoothing=0.1)
+optimizer = torch.optim.Adam(params=googlenet.parameters(), lr=0.001)
+epochs = 5
+
+for epoch in tqdm(range(epochs)):
+    googlenet.train()
+    train_loss, train_acc = 0, 0
+    
+    # Training loop
+    for (X, y) in train_dloader:
+        X, y = X.to(device), y.to(device)
+        
+        y_logits = googlenet(X)
+        y_pred_labels = torch.softmax(y_logits, dim=1).argmax(dim=1)
+        loss = loss_fn(y_logits, y)
+        train_loss += loss.item()
+        train_acc += (y == y_pred_labels).sum().item() / len(y)
+        
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        
+        
+    train_loss /= len(train_dloader)
+    train_acc /= len(train_dloader)
+    
+    # Testing loop
+    googlenet.eval()
+    test_loss, test_acc = 0, 0
+    
+    with torch.inference_mode():
+        for (A, b) in test_dloader:
+            A, b = A.to(device), b.to(device)
+            b_logits = googlenet(A)
+            b_pred_labels = torch.softmax(b_logits, dim=1).argmax(dim=1)
+            test_loss += loss_fn(b_logits, b).item()
+            test_acc += (b == b_pred_labels).sum().item() / len(b)
+            
+    test_loss /= len(test_dloader)
+    test_acc /= len(test_dloader)
+        
+    print(f"Epoch: {epoch} -> TrainLoss, TrainAcc: {train_loss}, {train_acc} && TestLoss, TestAcc: {test_loss}, {test_acc}")
+
+    with torch.inference_mode():
+    imgs, labels = next(iter(test_dloader))
+    imgs_transformed = googlenet_transforms(imgs)
+    
+    logits = googlenet(imgs_transformed.to(device))
+    pred_probs = torch.softmax(logits, dim=1)
+    pred_label = torch.argmax(pred_probs, dim=1)
+
+w, h = 4, 8
+fig, axes_list = plt.subplots(h, w, figsize=(25, 40)) 
+fig.suptitle('Inference on one batch')
+
+axes_list = axes_list.flatten()
+
+for i, img in enumerate(imgs):
+    axes_list[i].imshow(img.permute(1, 2, 0))
+    axes_list[i].axis('off')
+    axes_list[i].set(title=f"Actual: {class_names[labels[i] - 1]}\n Predicted: {class_names[pred_label[i] - 1]}")
