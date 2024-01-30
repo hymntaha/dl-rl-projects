@@ -46,3 +46,44 @@ for i, company in enumerate(company_list, 1):
     plt.title(f"Closing Price of {tech_list[i - 1]}")
     
 plt.tight_layout()
+plt.show()
+
+plt.figure(figsize=(15, 10))
+plt.subplots_adjust(top=1.25, bottom=1.2)
+
+for i, company in enumerate(company_list, 1):
+    plt.subplot(2, 2, i)
+    company['Volume'].plot()
+    plt.ylabel('Volume')
+    plt.xlabel(None)
+    plt.title(f"Sales Volume for {tech_list[i - 1]}")
+    
+plt.tight_layout()
+plt.show()
+
+ma_day = [10, 20, 50]
+
+for ma in ma_day:
+    for company in company_list:
+        column_name = f"MA for {ma} days"
+        company[column_name] = company['Adj Close'].rolling(ma).mean()
+        
+
+fig, axes = plt.subplots(nrows=2, ncols=2)
+fig.set_figheight(10)
+fig.set_figwidth(15)
+
+AAPL[['Adj Close', 'MA for 10 days', 'MA for 20 days', 'MA for 50 days']].plot(ax=axes[0,0])
+axes[0,0].set_title('APPLE')
+
+GOOG[['Adj Close', 'MA for 10 days', 'MA for 20 days', 'MA for 50 days']].plot(ax=axes[0,1])
+axes[0,1].set_title('GOOGLE')
+
+MSFT[['Adj Close', 'MA for 10 days', 'MA for 20 days', 'MA for 50 days']].plot(ax=axes[1,0])
+axes[1,0].set_title('MICROSOFT')
+
+AMZN[['Adj Close', 'MA for 10 days', 'MA for 20 days', 'MA for 50 days']].plot(ax=axes[1,1])
+axes[1,1].set_title('AMAZON')
+
+fig.tight_layout()
+plt.show()
