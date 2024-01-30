@@ -131,3 +131,55 @@ closing_df = pdr.get_data_yahoo(tech_list, start=start, end=end)['Adj Close']
 # Make a new tech returns DataFrame
 tech_rets = closing_df.pct_change()
 print(tech_rets.head())
+
+print(sns.jointplot(x='GOOG', y='GOOG', data=tech_rets, kind='scatter', color='seagreen'))
+print(sns.jointplot(x='GOOG', y='MSFT', data=tech_rets, kind='scatter'))
+sns.pairplot(tech_rets, kind='reg')
+
+# Set up our figure by naming it returns_fig, call PairPLot on the DataFrame
+return_fig = sns.PairGrid(tech_rets.dropna())
+
+# Using map_upper we can specify what the upper triangle will look like.
+return_fig.map_upper(plt.scatter, color='purple')
+
+# We can also define the lower triangle in the figure, inclufing the plot type (kde) 
+# or the color map (BluePurple)
+return_fig.map_lower(sns.kdeplot, cmap='cool_d')
+
+# Finally we'll define the diagonal as a series of histogram plots of the daily return
+return_fig.map_diag(plt.hist, bins=30)
+
+# Set up our figure by naming it returns_fig, call PairPLot on the DataFrame
+returns_fig = sns.PairGrid(closing_df)
+
+# Using map_upper we can specify what the upper triangle will look like.
+returns_fig.map_upper(plt.scatter,color='purple')
+
+# We can also define the lower triangle in the figure, inclufing the plot type (kde) or the color map (BluePurple)
+returns_fig.map_lower(sns.kdeplot,cmap='cool_d')
+
+# Finally we'll define the diagonal as a series of histogram plots of the daily return
+returns_fig.map_diag(plt.hist,bins=30)
+
+plt.figure(figsize=(12, 10))
+
+plt.subplot(2, 2, 1)
+sns.heatmap(tech_rets.corr(), annot=True, cmap='summer')
+plt.title('Correlation of stock return')
+
+plt.subplot(2, 2, 2)
+sns.heatmap(closing_df.corr(), annot=True, cmap='summer')
+plt.title('Correlation of stock closing price')
+
+rets = tech_rets.dropna()
+
+area = np.pi * 20
+
+plt.figure(figsize=(10, 8))
+plt.scatter(rets.mean(), rets.std(), s=area)
+plt.xlabel('Expected return')
+plt.ylabel('Risk')
+
+for label, x, y in zip(rets.columns, rets.mean(), rets.std()):
+    plt.annotate(label, xy=(x, y), xytext=(50, 50), textcoords='offset points', ha='right', va='bottom', 
+                 arrowprops=dict(arrowstyle='-', color='blue', connectionstyle='arc3,rad=-0.3'))
