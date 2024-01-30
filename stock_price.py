@@ -87,3 +87,47 @@ axes[1,1].set_title('AMAZON')
 
 fig.tight_layout()
 plt.show()
+
+# We'll use pct_change to find the percent change for each day
+for company in company_list:
+    company['Daily Return'] = company['Adj Close'].pct_change()
+
+# Then we'll plot the daily return percentage
+fig, axes = plt.subplots(nrows=2, ncols=2)
+fig.set_figheight(10)
+fig.set_figwidth(15)
+
+AAPL['Daily Return'].plot(ax=axes[0,0], legend=True, linestyle='--', marker='o')
+axes[0,0].set_title('APPLE')
+
+GOOG['Daily Return'].plot(ax=axes[0,1], legend=True, linestyle='--', marker='o')
+axes[0,1].set_title('GOOGLE')
+
+MSFT['Daily Return'].plot(ax=axes[1,0], legend=True, linestyle='--', marker='o')
+axes[1,0].set_title('MICROSOFT')
+
+AMZN['Daily Return'].plot(ax=axes[1,1], legend=True, linestyle='--', marker='o')
+axes[1,1].set_title('AMAZON')
+
+fig.tight_layout()
+plt.show()
+
+plt.figure(figsize=(12, 9))
+
+for i, company in enumerate(company_list, 1):
+    plt.subplot(2, 2, i)
+    company['Daily Return'].hist(bins=50)
+    plt.xlabel('Daily Return')
+    plt.ylabel('Counts')
+    plt.title(f'{company_name[i - 1]}')
+    
+plt.tight_layout()
+plt.show()
+
+# Grab all the closing prices for the tech stock list into one DataFrame
+
+closing_df = pdr.get_data_yahoo(tech_list, start=start, end=end)['Adj Close']
+
+# Make a new tech returns DataFrame
+tech_rets = closing_df.pct_change()
+print(tech_rets.head())
