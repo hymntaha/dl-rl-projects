@@ -267,3 +267,128 @@ print(svc_conf_matrix)
 print("\nAccuracy of Support Vector Classifier:", svc_acc_score * 100, '\n')
 print("Classification Report:")
 print(classification_report(y_test, svc_predicted))
+
+
+###### Random Forest ######
+param_dist_rf = {
+    'n_estimators': [50, 100, 200, 300],
+    'max_depth': [None, 10, 20, 30],
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
+    'bootstrap': [True, False],
+    'criterion': ['gini', 'entropy'],
+}
+
+rf = RandomForestClassifier()
+
+randomized_search_rf = RandomizedSearchCV(
+    rf,
+    param_distributions=param_dist_rf,
+    n_iter=10,
+    cv=5,
+    scoring='accuracy',
+    random_state=42,
+    n_jobs=-1
+)
+
+randomized_search_rf.fit(X_train, y_train)
+
+best_params_rf = randomized_search_rf.best_params_
+print(f"Best Hyperparameters for Random Forest: {best_params_rf}")
+
+best_rf_model = randomized_search_rf.best_estimator_
+
+rf_predicted = best_rf_model.predict(X_test)
+
+rf_acc_score = accuracy_score(y_test, rf_predicted)
+rf_conf_matrix = confusion_matrix(y_test, rf_predicted)
+
+print("\nConfusion Matrix for Random Forest:")
+print(rf_conf_matrix)
+print("\nAccuracy of Random Forest Classifier:", rf_acc_score * 100, '\n')
+print("Classification Report for Random Forest:")
+print(classification_report(y_test, rf_predicted))
+
+
+
+###### XGB Classifier  ######
+param_dist_xgb = {
+    'learning_rate': [0.01, 0.1, 0.2, 0.3],
+    'n_estimators': [50, 100, 200, 300],
+    'max_depth': [3, 5, 7, 10],
+    'min_child_weight': [1, 3, 5, 7],
+    'gamma': [0, 0.1, 0.2, 0.3],
+    'subsample': [0.8, 0.9, 1.0],
+    'colsample_bytree': [0.8, 0.9, 1.0],
+    'reg_alpha': [0, 0.1, 0.2, 0.3],
+    'reg_lambda': [1, 1.1, 1.2, 1.3],
+}
+
+xgb = XGBClassifier()
+
+randomized_search_xgb = RandomizedSearchCV(
+    xgb,
+    param_distributions=param_dist_xgb,
+    n_iter=10,
+    cv=5,
+    scoring='accuracy',
+    random_state=42,
+    n_jobs=-1
+)
+
+randomized_search_xgb.fit(X_train, y_train)
+
+best_params_xgb = randomized_search_xgb.best_params_
+print(f"Best Hyperparameters for XGBoost: {best_params_xgb}")
+
+best_xgb_model = randomized_search_xgb.best_estimator_
+
+xgb_predicted = best_xgb_model.predict(X_test)
+
+xgb_acc_score = accuracy_score(y_test, xgb_predicted)
+xgb_conf_matrix = confusion_matrix(y_test, xgb_predicted)
+
+print("\nConfusion Matrix for XGBoost:")
+print(xgb_conf_matrix)
+print("\nAccuracy of XGBoost Classifier:", xgb_acc_score * 100, '\n')
+print("Classification Report for XGBoost:")
+print(classification_report(y_test, xgb_predicted))
+
+####### KNN #######
+param_dist_knn = {
+    'n_neighbors': [3, 5, 7, 10],
+    'weights': ['uniform', 'distance'],
+    'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
+    'leaf_size': [10, 20, 30, 40],
+    'p': [1, 2],
+}
+
+knn = KNeighborsClassifier()
+
+randomized_search_knn = RandomizedSearchCV(
+    knn,
+    param_distributions=param_dist_knn,
+    n_iter=10,
+    cv=5,
+    scoring='accuracy',
+    random_state=42,
+    n_jobs=-1
+)
+
+randomized_search_knn.fit(X_train, y_train)
+
+best_params_knn = randomized_search_knn.best_params_
+print(f"Best Hyperparameters for KNeighborsClassifier: {best_params_knn}")
+
+best_knn_model = randomized_search_knn.best_estimator_
+
+knn_predicted = best_knn_model.predict(X_test)
+
+knn_acc_score = accuracy_score(y_test, knn_predicted)
+knn_conf_matrix = confusion_matrix(y_test, knn_predicted)
+
+print("\nConfusion Matrix for KNeighborsClassifier:")
+print(knn_conf_matrix)
+print("\nAccuracy of KNeighborsClassifier:", knn_acc_score * 100, '\n')
+print("Classification Report for KNeighborsClassifier:")
+print(classification_report(y_test, knn_predicted))
