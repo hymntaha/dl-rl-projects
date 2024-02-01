@@ -216,3 +216,54 @@ plt.title('Count of Observations in Each Cluster')
 
 plt.tight_layout()
 plt.show()
+
+df1 = df_clean.copy()
+X = df1.drop(['Label'], axis=1)
+y = df1['Label']
+
+scaler = MinMaxScaler(feature_range=(0, 1))
+X_scaled = pd.DataFrame(scaler.fit_transform(X), columns=X.columns)
+
+smote = SMOTE(random_state=42)
+X_resampled, y_resampled = smote.fit_resample(X_scaled, y)
+
+X_resampled.describe().T.style.background_gradient(axis=0, cmap='viridis')
+X_train, X_test, y_train, y_test = train_test_split(X_resampled, y_resampled, test_size=0.2, random_state=42)
+
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
+from lightgbm import LGBMClassifier
+from xgboost import XGBClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import RandomizedSearchCV
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.metrics import roc_curve, auc
+
+######  SVC ######
+
+param_dist = {
+    'C': [0.1, 1, 10, 100],
+    'kernel': ['linear', 'rbf', 'poly'],
+    'gamma': ['scale', 'auto', 0.1, 1],
+}
+
+svc = SVC()
+
+randomized_search = RandomizedSearchCV(svc, param_distributions=param_dist, n_iter=10, cv=5, scoring='accuracy', random_state=42, n_jobs=-1)
+
+randomized_search.fit(X_train, y_train)
+
+best_params = randomized_search.best_params_
+print(f"Best Hyperparameters: {best_params}")
+
+best_svc_model = randomized_search.best_estimator_
+svc_predicted = best_svc_model.predict(X_test)
+
+svc_acc_score = accuracy_score(y_test, svc_predicted)
+svc_conf_matrix = confusion_matrix(y_test, svc_predicted)
+
+print("\nConfusion Matrix:")
+print(svc_conf_matrix)
+print("\nAccuracy of Support Vector Classifier:", svc_acc_score * 100, '\n')
+print("Classification Report:")
+print(classification_report(y_test, svc_predicted))
