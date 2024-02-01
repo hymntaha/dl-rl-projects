@@ -392,3 +392,73 @@ print(knn_conf_matrix)
 print("\nAccuracy of KNeighborsClassifier:", knn_acc_score * 100, '\n')
 print("Classification Report for KNeighborsClassifier:")
 print(classification_report(y_test, knn_predicted))
+
+
+###### LGBM Classifier ######
+param_dist_lgbm = {
+    'learning_rate': [0.01, 0.1, 0.2],
+    'n_estimators': [50, 100, 200, 300],
+    'max_depth': [3, 5, 7, -1],  
+    'subsample': [0.8, 0.9, 1.0],
+    'colsample_bytree': [0.8, 0.9, 1.0],
+}
+
+lgbm = LGBMClassifier()
+
+randomized_search_lgbm = RandomizedSearchCV(
+    lgbm,
+    param_distributions=param_dist_lgbm,
+    n_iter=10,
+    cv=5,
+    scoring='accuracy',
+    random_state=42,
+    n_jobs=-1
+)
+
+randomized_search_lgbm.fit(X_train, y_train)
+
+best_params_lgbm = randomized_search_lgbm.best_params_
+print(f"Best Hyperparameters for LGBMClassifier: {best_params_lgbm}")
+
+best_lgbm_model = randomized_search_lgbm.best_estimator_
+
+lgbm_predicted = best_lgbm_model.predict(X_test)
+
+lgbm_acc_score = accuracy_score(y_test, lgbm_predicted)
+lgbm_conf_matrix = confusion_matrix(y_test, lgbm_predicted)
+
+print("\nConfusion Matrix for LGBMClassifier:")
+print(lgbm_conf_matrix)
+print("\nAccuracy of LGBMClassifier:", lgbm_acc_score * 100, '\n')
+print("Classification Report for LGBMClassifier:")
+print(classification_report(y_test, lgbm_predicted))
+
+
+##### Best model is SVC #####
+conf_matrix = confusion_matrix(y_test, svc_predicted)
+
+plt.figure(figsize=(10, 6))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='crest', cbar=False)
+plt.title('Confusion Matrix - SVC')
+plt.xlabel('Predicted Labels')
+plt.ylabel('True Labels')
+plt.show()
+
+print("\nAccuracy of Support Vector Classifier:", svc_acc_score * 100, '\n')
+
+
+###### ROC Curve ######
+y_prob = best_svc_model.decision_function(X_test)
+
+fpr, tpr, thresholds = roc_curve(y_test, y_prob)
+
+roc_auc = auc(fpr, tpr)
+
+plt.figure(figsize=(8, 6))
+plt.plot(fpr, tpr, color='darkorange', lw=2, label=f'ROC curve (AUC = {roc_auc:.2f})')
+plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label='Random')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.title('Receiver Operating Characteristic (ROC) Curve')
+plt.legend(loc='lower right')
+plt.show()
