@@ -45,3 +45,42 @@ encod_corp=[]
 for i,doc in enumerate(corp):
     encod_corp.append(one_hot(doc,50))
     print("The encoding for document",i+1," is : ",one_hot(doc,50))
+
+
+# length of maximum document. will be nedded whenever create embeddings for the words
+maxlen=-1
+for doc in corp:
+    tokens=nltk.word_tokenize(doc)
+    if(maxlen<len(tokens)):
+        maxlen=len(tokens)
+print("The maximum number of words in any document is : ",maxlen)
+
+# now to create embeddings all of our docs need to be of same length. hence we can pad the docs with zeros.
+pad_corp=pad_sequences(encod_corp,maxlen=maxlen,padding='post',value=0.0)
+print("No of padded documents: ",len(pad_corp))
+
+for i,doc in enumerate(pad_corp):
+     print("The padded encoding for document",i+1," is : ",doc)
+
+# specifying the input shape
+input=Input(shape=(no_docs,maxlen),dtype='float64')
+
+
+'''
+shape of input. 
+each document has 12 element or words which is the value of our maxlen variable.
+
+'''
+word_input=Input(shape=(maxlen,),dtype='float64')  
+
+# creating the embedding
+word_embedding=Embedding(input_dim=vocab_size,output_dim=8,input_length=maxlen)(word_input)
+
+word_vec=Flatten()(word_embedding) # flatten
+embed_model =Model([word_input],word_vec) # combining all into a Keras model
+
+embed_model.compile(optimizer=keras.optimizers.Adam(lr=1e-3),loss='binary_crossentropy',metrics=['acc']) 
+# compiling the model. parameters can be tuned as always.
+
+print(type(word_embedding))
+print(word_embedding)
