@@ -84,3 +84,11 @@ embed_model.compile(optimizer=keras.optimizers.Adam(lr=1e-3),loss='binary_crosse
 
 print(type(word_embedding))
 print(word_embedding)
+
+embeddings=embeddings.reshape(-1,maxlen,8)
+print("Shape of embeddings : ",embeddings.shape) 
+print(embeddings)
+
+for i,doc in enumerate(embeddings):
+    for j,word in enumerate(doc):
+        print("The encoding for ",j+1,"th word","in",i+1,"th document is : \n\n",word)
