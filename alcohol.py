@@ -239,3 +239,120 @@ feature_importances_rf = pd.concat([pd.Series(features_imp.columns, name='featur
                                     pd.Series(regressor_rf.feature_importances_, name='importance')],
                                     axis=1).sort_values(by='importance', ascending=False).reset_index(drop=True)
 feature_importances_rf
+
+plt.figure(figsize=(15,9))
+sns.barplot(data=feature_importances_rf[:20], x='features', y='importance')
+plt.xticks(rotation=45)
+plt.show()
+
+sns.histplot(df['failures'], discrete=True)
+plt.title('Distribution of failures')
+plt.show()
+df['failures'].value_counts(normalize=True).to_frame()
+
+plt.figure(figsize=(15,6))
+for failures, grouped_data in df.groupby('failures'):
+    sns.kdeplot(grouped_data['G1'], label=failures)
+plt.legend()
+plt.title('Grade distribtuion depending on the past failures')
+plt.show()
+
+sns.histplot(df['freetime'], discrete=True)
+plt.title('Distribution of freetime')
+plt.show()
+df['freetime'].value_counts(normalize=True).to_frame()
+
+plt.figure(figsize=(15,6))
+for freetime, grouped_data in df.groupby('freetime'):
+    sns.kdeplot(grouped_data['G1'], label=freetime)
+plt.legend()
+plt.title('Grade distribtuion depending on freetime')
+plt.show()
+
+df.groupby('freetime')['G1'].mean().plot(kind='bar')
+plt.title('Mean value of G1 over freetime')
+plt.ylabel('Mean value of G1')
+plt.xticks(rotation=0)
+plt.show()
+
+sns.histplot(df['Medu'], discrete=True)
+plt.title('Distribution of mother\'s education')
+plt.show()
+df['Medu'].value_counts(normalize=True).to_frame()
+
+plt.figure(figsize=(15,6))
+for medu, grouped_data in df.groupby('Medu'):
+    sns.kdeplot(grouped_data['G1'], label=medu)
+plt.legend()
+plt.title('Grade distribtuion depending on mother\'s education')
+plt.show()
+
+df.groupby('Medu')['G1'].mean().plot(kind='bar')
+plt.title('Mean value of G1 over mother\'s education')
+plt.ylabel('Mean value of G1')
+plt.xticks(rotation=0)
+plt.show()
+
+sns.histplot(df['schoolsup'], discrete=True)
+plt.title('Distribution of scholl support')
+plt.show()
+df['schoolsup'].value_counts(normalize=True).to_frame()
+
+plt.figure(figsize=(15,6))
+for schoolsup, grouped_data in df.groupby('schoolsup'):
+    sns.kdeplot(grouped_data['G1'], label=schoolsup)
+plt.legend()
+plt.title('Grade distribtuion depending on school support')
+plt.show()
+
+df.groupby('schoolsup')['G1'].mean().plot(kind='bar')
+plt.title('Mean value of G1 over school support')
+plt.ylabel('Mean value of G1')
+plt.xticks(rotation=0)
+plt.show()
+
+sns.histplot(df['studytime'], discrete=True)
+plt.title('Distribution of study time')
+plt.show()
+df['studytime'].value_counts(normalize=True).to_frame()
+
+plt.figure(figsize=(15,6))
+for studytime, grouped_data in df.groupby('studytime'):
+    sns.kdeplot(grouped_data['G1'], label=studytime)
+plt.legend()
+plt.title('Grade distribtuion depending on study time')
+plt.show()
+
+df.groupby('studytime')['G1'].mean().plot(kind='bar')
+plt.title('Mean value of G1 over study time')
+plt.ylabel('Mean value of G1')
+plt.xticks(rotation=0)
+plt.show()
+
+sns.histplot(df['absences'], bins=30)
+plt.title('Absences distribtuion')
+plt.show()
+
+plt.scatter(df['absences'], df['G1'])
+plt.xlabel('Number of absences')
+plt.ylabel('Grade')
+plt.show()
+
+_, axes = plt.subplots(2, 2, figsize=(15,9))
+_.suptitle('Influence of absences on grade')
+sns.kdeplot(df.query('absences == 0')['G1'], label='0 absences', ax=axes[0, 0])
+sns.kdeplot(df.query('absences > 0')['G1'], label='there are absences', ax=axes[0, 0])
+axes[0, 0].legend()
+
+sns.kdeplot(df.query('absences < 5')['G1'], label='less than 5 ', ax=axes[0, 1])
+sns.kdeplot(df.query('absences >= 5 ')['G1'], label='>= 5', ax=axes[0, 1])
+axes[0, 1].legend()
+
+sns.kdeplot(df.query('absences < 10')['G1'], label='less than 10 ', ax=axes[1, 0])
+sns.kdeplot(df.query('absences >= 10 ')['G1'], label='>= 10', ax=axes[1, 0])
+axes[1, 0].legend()
+
+sns.kdeplot(df.query('absences < 20')['G1'], label='less than 20 ', ax=axes[1, 1])
+sns.kdeplot(df.query('absences >= 20 ')['G1'], label='>= 20', ax=axes[1, 1])
+axes[1, 1].legend()
+plt.show()
