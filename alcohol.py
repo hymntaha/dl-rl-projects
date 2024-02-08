@@ -59,3 +59,71 @@ plt.title('G3 distribtuion')
 plt.show()
 
 df.query('G3 == 0')
+
+fig, axes = plt.subplots(1, 2, figsize=(14,5))
+axes[0].scatter(data=df, x='G1', y='G3')
+axes[0].set_title('G3 versus G1')
+axes[0].set_xlabel('G1')
+axes[0].set_ylabel('G3')
+axes[1].scatter(data=df, x='G2', y='G3')
+axes[1].set_title('G3 versus G2')
+axes[1].set_xlabel('G2')
+axes[1].set_ylabel('G3')
+plt.show()
+
+sns.histplot(data=df, x="Dalc", hue="sex", element="step",  stat="density")
+plt.title('Influence of gender on the alcohol consumption on the workdays')
+plt.show()
+
+sns.histplot(data=df, x="Walc", hue="sex", element="step",  stat="density")
+plt.title('Influence of gender on the alcohol consumption on the weekend')
+plt.show()
+
+df.groupby('sex')[['Dalc', 'Walc']].mean()
+
+df.groupby('age')[['Dalc', 'Walc']].mean().plot(kind='bar')
+plt.ylabel('Alcohol consumption')
+plt.xticks(rotation=0)
+plt.title('Mean alcohol consumption over age')
+plt.show()
+
+df.groupby('age')[['Dalc', 'Walc']].agg(['mean', 'count'])
+df.groupby('address')[['Dalc', 'Walc']].agg(['mean', 'count'])
+
+for group, data in df.groupby('address'):
+    data['Dalc'].hist(alpha=0.5, density=True, label=group, grid=False)
+plt.legend()
+plt.title('Workday alcohol consumption depending of the type of living area')
+plt.show()
+
+for group, data in df.groupby('address'):
+    data['Walc'].hist(alpha=0.5, density=True, label=group, grid=False)
+plt.legend()
+plt.title('Weekend alcohol consumption depending of the type of living area')
+plt.show()
+
+sample_R = df.query('address == "R"')['Walc']
+sample_U = df.query('address == "U"')['Walc']
+
+st.ttest_ind(sample_R, sample_U).pvalue
+df.groupby('Pstatus')[['Dalc', 'Walc']].agg(['mean', 'count'])
+
+for group, data in df.groupby('Pstatus'):
+    data['Dalc'].hist(alpha=0.5, density=True, label=group, grid=False)
+plt.legend()
+plt.title('Workday alcohol consumption depending of the parent\'s cohabitation status')
+plt.show()
+
+for group, data in df.groupby('Pstatus'):
+    data['Walc'].hist(alpha=0.5, density=True, label=group, grid=False)
+plt.legend()
+plt.title('Weekend alcohol consumption depending of the parent\'s cohabitation status')
+plt.show()
+
+plt.figure(figsize=(15,6))
+for age, grouped_data in df.groupby('age'):
+    if age <= 19:
+        sns.kdeplot(grouped_data['G1'], label=age)
+plt.legend()
+plt.title('Grade distribtuion depending on age of students')
+plt.show()
