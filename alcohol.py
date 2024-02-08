@@ -127,3 +127,62 @@ for age, grouped_data in df.groupby('age'):
 plt.legend()
 plt.title('Grade distribtuion depending on age of students')
 plt.show()
+
+df.query('age <= 19').groupby('age')['G1'].mean().plot(kind='bar')
+plt.title('Mean value of G1 over age')
+plt.ylabel('Mean value of G1')
+plt.xticks(rotation=0)
+plt.show()
+
+print(st.ttest_ind(df.query('age == 15')['G1'], df.query('age == 19')['G1'], equal_var=False).pvalue)
+print(st.ttest_ind(df.query('age == 15')['G1'], df.query('age == 18')['G1'], equal_var=False).pvalue)
+print(st.ttest_ind(df.query('age == 15')['G1'], df.query('age == 17')['G1'], equal_var=False).pvalue)
+print(st.ttest_ind(df.query('age == 15')['G1'], df.query('age == 16')['G1'], equal_var=False).pvalue)
+
+sns.kdeplot(data=df, x="G1", hue="sex")
+plt.title('Influence of gender on G1')
+plt.show()
+
+df.groupby('sex')[['G1']].mean()
+st.ttest_ind(df.query('sex == "M"')['G1'], df.query('sex == "F"')['G1'], equal_var=False).pvalue
+
+plt.figure(figsize=(15,6))
+for dalc, grouped_data in df.groupby('Dalc'):
+    sns.kdeplot(grouped_data['G1'], label=dalc)
+plt.legend()
+plt.title('Grade distribtuion depending on the workday alcohol consumption')
+plt.show()
+
+df.groupby('Dalc')['G1'].mean().plot(kind='bar')
+plt.title('Mean value of G1 over workday alcohol consumption')
+plt.ylabel('Mean value of G1')
+plt.xticks(rotation=0)
+plt.show()
+
+print(st.ttest_ind(df.query('Dalc == 1')['G1'], df.query('Dalc == 2')['G1'], equal_var=False).pvalue)
+print(st.ttest_ind(df.query('Dalc == 1')['G1'], df.query('Dalc == 3')['G1'], equal_var=False).pvalue)
+print(st.ttest_ind(df.query('Dalc == 1')['G1'], df.query('Dalc == 4')['G1'], equal_var=False).pvalue)
+print(st.ttest_ind(df.query('Dalc == 1')['G1'], df.query('Dalc == 5')['G1'], equal_var=False).pvalue)
+
+df.groupby('Dalc')['Dalc'].count().to_frame()
+
+plt.figure(figsize=(15,6))
+for walc, grouped_data in df.groupby('Walc'):
+    sns.kdeplot(grouped_data['G1'], label=walc)
+plt.legend()
+plt.title('Grade distribtuion depending on the weekend alcohol consumption')
+plt.show()
+
+df.groupby('Walc')['G1'].mean().plot(kind='bar')
+plt.title('Mean value of G1 over weekend alcohol consumption')
+plt.ylabel('Mean value of G1')
+plt.xticks(rotation=0)
+plt.show()
+
+print(st.ttest_ind(df.query('Walc == 2')['G1'], df.query('Walc == 1')['G1'], equal_var=False).pvalue)
+print(st.ttest_ind(df.query('Walc == 2')['G1'], df.query('Walc == 3')['G1'], equal_var=False).pvalue)
+print(st.ttest_ind(df.query('Walc == 2')['G1'], df.query('Walc == 4')['G1'], equal_var=False).pvalue)
+print(st.ttest_ind(df.query('Walc == 2')['G1'], df.query('Walc == 5')['G1'], equal_var=False).pvalue)
+
+df.groupby('Walc')['Walc'].count().to_frame()
+df[['age', 'absences', 'G1']].corr()
