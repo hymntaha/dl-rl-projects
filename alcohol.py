@@ -186,3 +186,56 @@ print(st.ttest_ind(df.query('Walc == 2')['G1'], df.query('Walc == 5')['G1'], equ
 
 df.groupby('Walc')['Walc'].count().to_frame()
 df[['age', 'absences', 'G1']].corr()
+
+features_imp = df.copy().drop(['G1', 'G2', 'G3'], axis=1)
+target_imp = df.copy()['G1']
+
+print(features_imp.shape)
+print(target_imp.shape)
+
+scaler_num = StandardScaler()
+features_imp[['age', 'absences']] = scaler_num.fit_transform(features_imp[['age', 'absences']])
+
+ohe_columns = []
+for col in features_imp.columns:
+    if col not in ['age', 'absences']:
+        ohe_columns.append(col)
+        
+features_imp = pd.get_dummies(features_imp, drop_first=True, columns=ohe_columns)
+
+features_imp.head()
+linear_regressor = LinearRegression()
+linear_regressor.fit(features_imp, target_imp)
+
+feature_importances_lr_coef = pd.concat([pd.Series(features_imp.columns, name='features'), 
+                                         pd.Series(linear_regressor.coef_, name='weights')],
+                                        axis=1)
+
+feature_importances_lr_coef
+feature_importances_lr_coef['weights'] = abs(feature_importances_lr_coef['weights'])
+
+feature_importances_lr_coef = feature_importances_lr_coef.sort_values(by='weights', ascending=False).reset_index(drop=True)
+
+plt.figure(figsize=(15,9))
+sns.barplot(data=feature_importances_lr_coef[:20], x='features', y='weights')
+plt.xticks(rotation=45)
+plt.show()
+
+parameters = {'max_depth' : [8, 10, 12, 20],
+              'n_estimators' : [200, 250, 300],
+              'max_features' : [5, 25, 50],
+              'min_samples_split' : [2, 4, 6]}
+grid_search = GridSearchCV(estimator = RandomForestRegressor(random_state=42),
+                           param_grid = parameters,
+                           scoring = 'neg_mean_squared_error',
+                           cv = 5)
+grid_search.fit(features_imp, target_imp)
+
+grid_search.best_params_
+
+regressor_rf = RandomForestRegressor(max_depth=12, n_estimators=300, max_features=25, min_samples_split=6, random_state=42)
+regressor_rf.fit(features_imp, target_imp)
+feature_importances_rf = pd.concat([pd.Series(features_imp.columns, name='features'), 
+                                    pd.Series(regressor_rf.feature_importances_, name='importance')],
+                                    axis=1).sort_values(by='importance', ascending=False).reset_index(drop=True)
+feature_importances_rf
