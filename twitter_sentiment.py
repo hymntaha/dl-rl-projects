@@ -26,3 +26,23 @@ train = pd.read_csv('./twitter_data/twitter_training.csv')
 
 train.columns = ['id', 'information', 'type', 'text']
 print(train.head())
+
+val.columns=['id','information','type','text']
+val.head()
+
+train_data=train
+train_data
+
+val_data=val
+val_data
+
+#Text transformation
+train_data["lower"]=train_data.text.str.lower() #lowercase
+train_data["lower"]=[str(data) for data in train_data.lower] #converting all to string
+train_data["lower"]=train_data.lower.apply(lambda x: re.sub('[^A-Za-z0-9 ]+', ' ', x)) #regex
+val_data["lower"]=val_data.text.str.lower() #lowercase
+val_data["lower"]=[str(data) for data in val_data.lower] #converting all to string
+val_data["lower"]=val_data.lower.apply(lambda x: re.sub('[^A-Za-z0-9 ]+', ' ', x)) #regex
+
+train_data.head()
+ 
