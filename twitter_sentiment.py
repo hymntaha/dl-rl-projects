@@ -77,3 +77,19 @@ plt.figure(figsize=(10,10))
 plt.imshow(wordcloud, interpolation="bilinear")
 plt.axis("off")
 plt.show()
+
+word_cloud_text = ''.join(train_data[train_data["type"]=="Irrelevant"].lower)
+#Creation of wordcloud
+wordcloud = WordCloud(
+    max_font_size=100,
+    max_words=100,
+    background_color="black",
+    scale=10,
+    width=800,
+    height=800
+).generate(word_cloud_text)
+#Figure properties
+plt.figure(figsize=(10,10))
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.show()
