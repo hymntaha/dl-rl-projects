@@ -174,3 +174,25 @@ print("Accuracy: ", accuracy_score(y_test_bow, test_pred_2) * 100)
 y_val_bow = val_data['type']
 Val_pred_2 = model2.predict(X_val_bow)
 print("Accuracy: ", accuracy_score(y_val_bow, Val_pred_2) * 100)
+
+
+#### XGBoost ####
+# https://stackoverflow.com/questions/71996617/invalid-classes-inferred-from-unique-values-of-y-expected-0-1-2-3-4-5-got
+le = LabelEncoder()
+y_train_bow_num = le.fit_transform(y_train_bow)
+y_test_bow_num=le.transform(y_test_bow)
+y_val_bow_num=le.transform(y_val_bow)
+
+%%time
+XGB=XGBClassifier(objective="multi:softmax",n_estimators=1000,colsample_bytree=0.6, subsample=0.6)
+XGB.fit(X_train_bow, y_train_bow_num)
+# Prediction
+test_pred_2 = XGB.predict(X_test_bow)
+print("Accuracy: ", accuracy_score(y_test_bow_num, test_pred_2) * 100)
+
+y_val_bow = val_data['type']
+Val_pred_2 = XGB.predict(X_val_bow)
+print("Accuracy: ", accuracy_score(y_val_bow_num, Val_pred_2) * 100)
+
+test_pred_N = XGB.predict(X_train_bow)
+print("Accuracy: ", accuracy_score(y_train_bow_num, test_pred_N) * 100)
