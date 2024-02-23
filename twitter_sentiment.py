@@ -93,3 +93,40 @@ plt.figure(figsize=(10,10))
 plt.imshow(wordcloud, interpolation="bilinear")
 plt.axis("off")
 plt.show()
+
+#Count information per category
+plot1=train.groupby(by=["information","type"]).count().reset_index()
+plot1.head()
+
+#Figure of comparison per branch
+plt.figure(figsize=(20,6))
+sns.barplot(data=plot1,x="information",y="id",hue="type")
+plt.xticks(rotation=90)
+plt.xlabel("Brand")
+plt.ylabel("Number of tweets")
+plt.grid()
+plt.title("Distribution of tweets per Branch and Type")
+
+#### Text Analysis ####
+#Text splitting
+tokens_text = [word_tokenize(str(word)) for word in train_data.lower]
+#Unique word counter
+tokens_counter = [item for sublist in tokens_text for item in sublist]
+print("Number of tokens: ", len(set(tokens_counter)))
+
+print(tokens_text[1])
+
+#Choosing english stopwords
+stopwords_nltk = nltk.corpus.stopwords
+stop_words = stopwords_nltk.words('english')
+print(stop_words[:5])
+
+#Initial Bag of Words
+bow_counts = CountVectorizer(
+    tokenizer=word_tokenize,
+    stop_words=stop_words, #English Stopwords
+    ngram_range=(1, 1) #analysis of one word
+)
+
+reviews_train, reviews_test = train_test_split(train_data, test_size=0.2, random_state=0)
+
