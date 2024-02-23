@@ -130,3 +130,47 @@ bow_counts = CountVectorizer(
 
 reviews_train, reviews_test = train_test_split(train_data, test_size=0.2, random_state=0)
 
+#Creation of encoding related to train dataset
+X_train_bow = bow_counts.fit_transform(reviews_train.lower)
+#Transformation of test dataset with train encoding
+X_test_bow = bow_counts.transform(reviews_test.lower)
+print(X_test_bow)
+y_test_bow.value_counts() / y_test_bow.shape[0]
+
+# Logistic regression
+model1 = LogisticRegression(C=1, solver="liblinear",max_iter=200)
+model1.fit(X_train_bow, y_train_bow)
+# Prediction
+test_pred = model1.predict(X_test_bow)
+print("Accuracy: ", accuracy_score(y_test_bow, test_pred) * 100)
+
+#Validation data
+X_val_bow = bow_counts.transform(val_data.lower)
+y_val_bow = val_data['type']
+
+print(X_val_bow)
+
+Val_res = model1.predict(X_val_bow)
+print("Accuracy: ", accuracy_score(y_val_bow, Val_res) * 100)
+
+#n-gram of 4 words
+bow_counts = CountVectorizer(
+    tokenizer=word_tokenize,
+    ngram_range=(1,4)
+)
+#Data labeling
+X_train_bow = bow_counts.fit_transform(reviews_train.lower)
+X_test_bow = bow_counts.transform(reviews_test.lower)
+X_val_bow = bow_counts.transform(val_data.lower)
+
+X_train_bow
+model2 = LogisticRegression(C=0.9, solver="liblinear",max_iter=1500)
+# Logistic regression
+model2.fit(X_train_bow, y_train_bow)
+# Prediction
+test_pred_2 = model2.predict(X_test_bow)
+print("Accuracy: ", accuracy_score(y_test_bow, test_pred_2) * 100)
+
+y_val_bow = val_data['type']
+Val_pred_2 = model2.predict(X_val_bow)
+print("Accuracy: ", accuracy_score(y_val_bow, Val_pred_2) * 100)
