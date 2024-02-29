@@ -121,3 +121,50 @@ else:
     model = RecommenderNet()
 
 model.summary()
+
+# Callbacks
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint, LearningRateScheduler, TensorBoard, EarlyStopping, ReduceLROnPlateau
+
+start_lr = 0.00001
+min_lr = 0.00001
+max_lr = 0.00005
+batch_size = 10000
+
+if TPU_INIT:
+    max_lr = max_lr * tpu_strategy.num_replicas_in_sync
+    batch_size = batch_size * tpu_strategy.num_replicas_in_sync
+
+rampup_epochs = 5
+sustain_epochs = 0
+exp_decay = .8
+
+
+def lrfn(epoch):
+    if epoch < rampup_epochs:
+        return (max_lr - start_lr)/rampup_epochs * epoch + start_lr
+    elif epoch < rampup_epochs + sustain_epochs:
+        return max_lr
+    else:
+        return (max_lr - min_lr) * exp_decay**(epoch-rampup_epochs-sustain_epochs) + min_lr
+    
+lr_callback = LearningRateScheduler(lambda epoch: lrfn(epoch), verbose=True)
+checkpoint_filepath = './weights.h5'
+
+model_checkpoint_callback = ModelCheckpoint(filepath=checkpoint_filepath, save_weights_only=True, monitor='val_loss', mode='min', save_best_only=True)
+
+early_stopping = EarlyStopping(monitor='val_loss', patience=3, verbose=True, mode='min', restore_best_weights=True)
+
+my_callbacks = [model_checkpoint_callback, lr_callback, early_stopping]
+
+# Model training
+history = model.fit(
+    x=X_train_array,
+    y=y_train,
+    batch_size=batch_size,
+    epochs=20,
+    verbose=1,
+    validation_data=(X_test_array, y_test),
+    callbacks=my_callbacks
+)
+
+model.load_weights(checkpoint_filepath)
