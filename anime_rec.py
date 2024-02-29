@@ -71,3 +71,23 @@ X_train, X_test, y_train, y_test = (
 
 print('> Train set ratings: {}'.format(len(y_train)))
 print('> Test set ratings: {}'.format(len(y_test)))
+
+X_train_array = [X_train[:, 0], X_train[:, 1]]
+X_test_array = [X_test[:, 0], X_test[:, 1]]
+
+import tensorflow as tf
+TPU_INIT = True
+if TPU_INIT:
+    tpu = tf.distribute.cluster_resolver.TPUClusterResolver().connect()
+    tpu_strategy = tf.distribute.TPUStrategy(tpu)
+else:
+    !nvidia-smi
+
+print(tf.__version__)
+
+
+#### Model Building ####
+from tensorflow.keras.models import Model
+from tensorflow.keras import layers
+from tensorflow.keras.optimizers import Adam
+
