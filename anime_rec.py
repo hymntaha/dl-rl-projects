@@ -168,3 +168,14 @@ history = model.fit(
 )
 
 model.load_weights(checkpoint_filepath)
+
+#Training results
+import matplotlib.pyplot as plt
+
+plt.plot(history.history["loss"][0:-2])
+plt.plot(history.history["val_loss"][0:-2])
+plt.title("model loss")
+plt.ylabel("loss")
+plt.xlabel("epoch")
+plt.legend(["train", "test"], loc="upper left")
+plt.show()
