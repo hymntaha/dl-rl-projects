@@ -91,3 +91,33 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import layers
 from tensorflow.keras.optimizers import Adam
 
+from tensorflow.keras.layers import Add, Activation, Lambda, Concatenate, BatchNormalization, Dropout, Input, Embedding, Flatten, Dense, Multiply, Dot
+
+def RecommenderNet():
+    embedding_size = 128
+
+    user = Input(name = 'user', shape = [1])
+    user_embedding = Embedding(name = 'user_embedding', input_dim = n_users, output_dim = embedding_size)(user)
+
+    anime = Input(name = 'anime', shape = [1])
+    anime_embedding = Embedding(name = 'anime_embedding', input_dim = n_animes, output_dim = embedding_size)(anime)
+
+    x = Dot(name = 'dot_product', normalize = True, axes = 2)([user_embedding, anime_embedding])
+    x = Flatten()(x)
+
+    x = Dense(1, kernel_initializer='he_normal')(x)
+    x = BatchNormalization()(x)
+    x = Activation('sigmoid')(x)
+
+    model = Model(inputs = [user, anime], outputs = x)
+    model.compile(loss='binary_crossentropy', optimizer=Adam(lr=0.001), metrics=["mae", "mse"])
+
+    return model
+
+if TPU_INIT:
+    with tpu_strategy.scope():
+        model = RecommenderNet()
+else:
+    model = RecommenderNet()
+
+model.summary()
